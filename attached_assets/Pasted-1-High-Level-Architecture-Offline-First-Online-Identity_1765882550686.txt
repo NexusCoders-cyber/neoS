@@ -1,0 +1,181 @@
+1️⃣ High-Level Architecture (Offline-First + Online Identity)
+Core idea
+
+Online (only when needed)
+
+User signup / login
+
+Referral tracking
+
+Payment status
+
+Sync minimal user metadata
+
+Offline (main app usage)
+
+Questions
+
+Exams
+
+Practice
+
+Scores
+
+Review + explanations
+
+👉 Once a user is authenticated once, the CBT app works 100% offline.
+
+2️⃣ Signup & Authentication Flow (Simple & Scalable)
+What you collect
+
+Keep it minimal to avoid friction:
+
+Field	Reason
+username	Display name
+email	Unique identifier
+password (hashed)	Login
+referral_code (optional)	Referral tracking
+device_id (auto)	Extra security
+Flow
+
+User installs app
+
+App detects not authenticated
+
+User must:
+
+Sign up OR
+
+Login
+
+Once successful:
+
+App stores a local auth token
+
+App switches to offline mode permanently
+
+✅ No internet required again unless:
+
+Payment verification
+
+Referral sync
+
+Optional updates
+
+3️⃣ Referral Program – How It Works (Very Important)
+Referral Logic (Simple but powerful)
+
+Every user gets a unique referral code
+
+New users can optionally input a referral code during signup
+
+Referral is locked once signup is completed
+
+Payments are tracked later
+
+4️⃣ Core Online Database Tables (Logical Schema)
+A. users table
+
+Tracks identity and payment state
+
+Field	Description
+id	Unique user ID
+username	Display name
+email	Unique
+password_hash	Security
+referral_code	Code assigned to this user
+referred_by	Referral code used
+is_paid	true / false
+created_at	Signup date
+B. referrals table
+
+Tracks referral relationships
+
+Field	Description
+id	Unique
+referrer_id	User who referred
+referred_user_id	New user
+has_paid	true / false
+created_at	Date
+
+👉 This lets you answer:
+
+Who referred who?
+
+How many people used a code?
+
+How many actually paid?
+
+C. payments table (optional but recommended)
+Field	Description
+id	Unique
+user_id	Who paid
+amount	Payment value
+status	pending / success
+reference	Payment gateway ref
+created_at	Date
+5️⃣ Local (Offline) Database Structure
+
+This lives inside the device (SQLite / IndexedDB).
+
+local_user
+Field	Purpose
+user_id	Sync ID
+username	UI display
+is_paid	Access control
+token	Auth session
+local_progress
+Field	Purpose
+subject	CBT subject
+year	Exam year
+score	Result
+attempts	Number
+last_taken	Date
+local_settings
+Field	Purpose
+exam_mode	timed / practice
+sound	on/off
+theme	light/dark
+6️⃣ Paid vs Free Access Logic (Very Clean)
+On App Launch
+
+Check local user table
+
+If not logged in → force signup
+
+If logged in:
+
+If is_paid = false
+
+Allow limited access
+
+If is_paid = true
+
+Unlock full CBT features
+
+👉 No internet needed to enforce this.
+
+7️⃣ Referral Dashboard (Admin View)
+
+Your admin panel should show:
+
+User list
+
+Referral code
+
+Number of signups via code
+
+Number of paid users per code
+
+Total earnings per referrer
+
+This comes directly from referrals + payments tables.
+
+8️⃣ Why This Plan Is Good (For Your Use Case)
+
+✅ Offline-first
+✅ Fast CBT performance
+✅ Easy referral tracking
+✅ Payment-aware UI
+✅ Scales to thousands of users
+✅ Works for Android, desktop, and web

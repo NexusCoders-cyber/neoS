@@ -1,0 +1,344 @@
+PART 1️⃣ — READY-TO-USE REPLIT AI PROMPTS
+
+👉 (You can paste these one by one into Replit)
+
+🔹 PROMPT 1: Backend Overview
+I am building an offline-first CBT (Computer Based Test) application.
+
+Tech stack:
+- Backend: Node.js (Express)
+- Database: Supabase (PostgreSQL)
+- Auth: Email + password
+- App type: Android (offline CBT, online signup only)
+
+Features:
+- User signup & login
+- Password hashing (bcrypt)
+- Referral system
+- Payment tracking
+- Android ID tracking (soft security)
+- Offline CBT usage after login
+
+Your task:
+- Help me structure the backend
+- Connect to Supabase
+- Implement clean database access using SQL tables
+- Prepare the project for scalability
+
+Do not include frontend code.
+
+🔹 PROMPT 2: Supabase Connection (Node.js)
+Generate Node.js (Express) backend code that connects to Supabase using environment variables.
+
+Requirements:
+- Use @supabase/supabase-js
+- Read SUPABASE_URL and SUPABASE_ANON_KEY from .env
+- Create a reusable Supabase client
+- Show example usage
+
+The code must be clean and production-ready.
+
+🔹 PROMPT 3: User Signup Logic
+Generate backend logic for user signup with the following requirements:
+
+- Accept username, email, password, referral_code (optional), android_id
+- Hash password using bcrypt
+- Save user to Supabase PostgreSQL
+- Generate a unique referral code for the user
+- If referral_code is provided, validate and store referral relationship
+- Save Android ID to a user_devices table
+- Return success response
+
+Use async/await and best practices.
+
+🔹 PROMPT 4: Login Logic
+Generate backend logic for user login:
+
+- Accept email, password, android_id
+- Fetch user by email
+- Compare password with bcrypt
+- Save or update android_id in user_devices
+- Return user profile (username, is_paid)
+
+Handle invalid login properly.
+
+🔹 PROMPT 5: Referral Dashboard Logic
+Generate backend queries that return:
+
+- Total referrals per user
+- Total paid referrals per user
+- Referral list with payment status
+
+Use SQL queries compatible with Supabase PostgreSQL.
+
+🔹 PROMPT 6: Payment Update Logic
+Generate backend logic to:
+
+- Save successful payment
+- Update users.is_paid = true
+- Update referrals.has_paid = true (if applicable)
+- Return updated user access
+
+Assume payment verification is already done.
+
+PART 2️⃣ — FULL SUPABASE SQL TABLE SCHEMAS
+
+👉 (Paste into Supabase → SQL Editor → Run)
+
+🧑 USERS TABLE
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  username VARCHAR(100) NOT NULL,
+  email VARCHAR(150) UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  referral_code VARCHAR(20) UNIQUE,
+  referred_by VARCHAR(20),
+  is_paid BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+📱 USER DEVICES TABLE (Android ID)
+CREATE TABLE user_devices (
+  id SERIAL PRIMARY KEY,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  android_id VARCHAR(255) NOT NULL,
+  device_name VARCHAR(150),
+  is_active BOOLEAN DEFAULT TRUE,
+  last_login TIMESTAMP DEFAULT NOW(),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+🔗 REFERRALS TABLE
+CREATE TABLE referrals (
+  id SERIAL PRIMARY KEY,
+  referrer_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  referred_user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  has_paid BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+💳 PAYMENTS TABLE
+CREATE TABLE payments (
+  id SERIAL PRIMARY KEY,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  amount DECIMAL(10,2) NOT NULL,
+  status VARCHAR(20) DEFAULT 'success',
+  reference VARCHAR(150),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+PART 3️⃣ — IMPORTANT SUPABASE SETTINGS (DON’T SKIP)
+✅ Enable UUID extension
+
+Run once:
+
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+✅ Row Level Security (Basic)
+
+Enable RLS:
+
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_devices ENABLE ROW LEVEL SECURITY;
+ALTER TABLE referrals ENABLE ROW LEVEL SECURITY;
+ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
+
+
+(Policies can be added later)
+
+PART 4️⃣ — WHAT YOU WILL HAVE AFTER THIS
+
+✅ Clean database
+✅ Secure password storage
+✅ Referral tracking
+✅ Android ID detection
+✅ Payment-ready backend
+✅ Easy Supabase integration
+✅ Works perfectly with Replit
+
+🔥 NEXT STEP (VERY IMPORTANT)
+
+Tell me which one you want next, and I’ll do it fully:
+
+1️⃣ Supabase RLS policies
+2️⃣ Full Express API routes
+3️⃣ Offline CBT JSON structure
+4️⃣ Admin analytics queries
+5️⃣ Deployment checklist (Replit → Production)
+
+You’re doing this the right way 👏
+
+The superbase has changed the API key. I cannot find the addon. So what is the next alternative for the API key integration?
+
+You’re not stuck 👍 — Supabase didn’t remove API keys, they renamed and reorganized them, which is why it looks confusing now.
+
+Let me explain clearly, then give you working alternatives, and finally tell you what to use on Replit.
+
+✅ FIRST: What Changed in Supabase (Important)
+
+Supabase removed the old “Addons” UI and moved everything under Project Settings.
+
+The keys still exist, but with new names:
+
+anon public key → for frontend / client
+
+service_role key → for backend (FULL ACCESS)
+
+⚠️ The service_role key replaces what many people used before.
+
+🔑 WHERE TO FIND THE NEW API KEYS (Step-by-step)
+In Supabase Dashboard:
+
+Open your project
+
+Go to Settings
+
+Click API
+
+You will see:
+
+Project URL
+
+anon public key
+
+service_role key
+
+That’s all you need.
+
+🚨 VERY IMPORTANT RULE (DO NOT BREAK THIS)
+Key	Where to use
+anon public key	Frontend only
+service_role key	Backend ONLY (Replit, server)
+
+❌ Never expose service_role to mobile or frontend.
+
+✅ HOW TO USE IT ON REPLIT (Recommended Setup)
+Step 1: Add Environment Variables in Replit
+
+In Replit:
+
+Go to Secrets (🔒 icon)
+
+Add:
+
+SUPABASE_URL = https://xxxxx.supabase.co
+SUPABASE_SERVICE_ROLE_KEY = your_service_role_key_here
+
+Step 2: Supabase Client (Backend – Node.js)
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+)
+
+export default supabase
+
+
+✅ This works even with RLS enabled
+✅ Full database access
+✅ Perfect for Replit backend
+
+❓ “What if I don’t want to use service_role?”
+
+Then you have two alternatives, but both have tradeoffs.
+
+🟡 ALTERNATIVE 1: Use anon key + RLS (More Work)
+How it works
+
+Use anon public key
+
+Write Row Level Security policies
+
+Backend behaves like a user
+
+Pros
+
+Very secure
+
+Good for production
+
+Cons
+
+Harder
+
+RLS rules can block your backend
+
+Slower development
+
+👉 NOT recommended for your current stage
+
+🟢 ALTERNATIVE 2: Use Supabase Auth ONLY (Hybrid)
+How it works
+
+Supabase handles auth
+
+You only store CBT data & referrals
+
+Use anon key + user sessions
+
+Pros
+
+Less password logic
+
+Secure
+
+Cons
+
+More Supabase-specific
+
+Harder offline auth control
+
+👉 Optional, not needed now.
+
+🧠 FINAL RECOMMENDATION (FOR YOU)
+
+Since:
+
+You’re on Replit
+
+You want fast backend development
+
+You’re building MVP
+
+You’re already managing auth logic
+
+✅ USE:
+
+Supabase service_role key in backend
+
+This is:
+
+Official
+
+Supported
+
+Stable
+
+What Supabase expects for servers
+
+🔐 SECURITY NOTE (VERY IMPORTANT)
+
+Even with service_role key:
+
+Keep it in .env
+
+Never log it
+
+Never send to client
+
+Never hardcode it
+
+If leaked → rotate immediately (Supabase allows rotation).
+
+🔜 WHAT WE SHOULD DO NEXT
+
+Choose ONE and I’ll do it fully:
+
+1️⃣ Create Express API routes using service_role
+2️⃣ Add basic RLS policies (future-proof)
+3️⃣ Implement bcrypt signup & login code
+4️⃣ Set up Supabase Auth instead of custom auth
+
+Just tell me the number.
